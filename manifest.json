@@ -1,0 +1,9 @@
+{
+  "name": "Color Fixer",
+  "id": "1037616212525799012",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": [
+    "figma"
+  ]
+}
