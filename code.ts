@@ -127,7 +127,7 @@ const main = () => {
   const themeStyles = figma.getLocalPaintStyles();
   
   if (themeStyles.length === 0) {
-    figma.notify("В этом файле нет стилей, а они как раз и нужны");
+    figma.notify("Layout with color styles is required");
     return
   };
   
