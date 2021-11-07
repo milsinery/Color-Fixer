@@ -14,29 +14,82 @@ const rgbToHsl = ({ r, g, b }) => {
   };
 };
 
-const isSimilarColor = (color, themeColor): Boolean => rgbToHsl(color).h === rgbToHsl(themeColor).h;
+const isSimilarColor = (color, themeColor, colorOpacity = 100, themeOpacity = 100): Boolean => {
+  const { h: colorH, s: colorS, l: colorL } = rgbToHsl(color);
+  const { h: themeH, s: themeS, l: themeL } = rgbToHsl(themeColor);
+  const colorO = colorOpacity;
+  const themeO = colorOpacity;
+
+  const isSimilarHue = (colorHue, themeHue) => {
+    const hueDifference = 5;
+
+    if(colorHue === themeHue) return true;
+
+    if(colorHue > themeHue && colorHue - themeHue <= hueDifference) {
+      return true;
+    } else if(colorHue < themeHue && themeHue - colorHue <= hueDifference) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  const isSimilarSaturation = (colorSaturation, themeSaturation) => {
+    const saturationDifference = 5;
+
+    if(colorSaturation === themeSaturation) return true;
+
+    if(colorSaturation > themeSaturation && colorSaturation - themeSaturation <= saturationDifference) {
+      return true;
+    } else if(colorSaturation < themeSaturation && themeSaturation - colorSaturation <= saturationDifference) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  const isSimilarLight = (colorLight, themeLight) => {
+    const colorDifference = 5;
+
+    if(colorLight === themeLight) return true;
+
+    if(colorLight > themeLight && colorLight - themeLight <= colorDifference) {
+      return true;
+    } else if(colorLight < themeLight && themeLight - colorLight <= colorDifference) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  const isSameOpacity = (colorOpacity, themeOpacity) => {
+    return colorOpacity === themeOpacity;
+  }
+
+  return isSameOpacity(colorO, themeO) && isSimilarHue(colorH, themeH) && isSimilarSaturation(colorS, themeS) && isSimilarLight(colorS, themeS);
+};
 
 const isSimilarImages = (image, themeImage): Boolean => image === themeImage;
 
-const fixColors = (node, themeStyles) => {
+const fixColor = (node, themeStyles) => {
   if(node.fillStyleId === themeStyles.id || node.strokeStyleId === themeStyles.id) return;
 
   if (node.fills.length !== 1 && node.strokes.length !== 1) return;
 
   if (node.fills.length === 1 && node.fills[0].type === "SOLID") {
-    if (isSimilarColor(node.fills[0].color, themeStyles.paints[0].color)){
+    if (isSimilarColor(node.fills[0].color, themeStyles.paints[0].color, node.fills[0].opacity, themeStyles.paints[0].opacity)){
       node.fillStyleId = themeStyles.id;
     }
   }
 
   if (node.strokes.length === 1 && node.strokes[0].type === "SOLID") {
-    if (isSimilarColor(node.strokes[0].color, themeStyles.paints[0].color)){
+    if (isSimilarColor(node.strokes[0].color, themeStyles.paints[0].color, node.strokes[0].opacity, themeStyles.paints[0].opacity)){
       node.strokeStyleId = themeStyles.id;
     }
   }
 };
 
-const fixImages = (node, themeStyles) => {
+const fixImage = (node, themeStyles) => {
   if(node.fillStyleId === themeStyles.id || node.strokeStyleId === themeStyles.id) return;
 
   if (node.fills.length !== 1 && node.strokes.length !== 1) return;
@@ -54,18 +107,18 @@ const fixImages = (node, themeStyles) => {
   };
 }
 
-const fixColorsOfGroups = (objectsArray, stylesArray) => {
+const fixColors = (objectsArray, stylesArray) => {
   for (const element1 of objectsArray) {
     for (const element2 of stylesArray) {
-      fixColors(element1, element2);
+      fixColor(element1, element2);
     }
   }
 };
 
-const fixImagesOfGroups = (objectsArray, stylesArray) => {
+const fixImages = (objectsArray, stylesArray) => {
   for (const element1 of objectsArray) {
     for (const element2 of stylesArray) {
-      fixImages(element1, element2);
+      fixImage(element1, element2);
     }
   }
 };
@@ -82,8 +135,8 @@ const main = () => {
   const themeImages = themeStyles.filter(item => item.paints[0].type === "IMAGE") as Array<PaintStyle>;
   const allOjectsOnPage = figma.currentPage.findAll((item) => item.type !== 'BOOLEAN_OPERATION' && item.type !== 'SLICE' && item.type !== "COMPONENT" && item.type !== "GROUP" && item.type !== "COMPONENT_SET" && item.type !== "FRAME" && item.type !== "INSTANCE" && item.type !== "STICKY" && item.type !== "STAMP" && item.type !== "WIDGET" && item.type !== "SHAPE_WITH_TEXT" && item.type !== "CONNECTOR");
   
-  fixColorsOfGroups(allOjectsOnPage, themeColors);
-  fixImagesOfGroups(allOjectsOnPage, themeImages);
+  fixColors(allOjectsOnPage, themeColors);
+  fixImages(allOjectsOnPage, themeImages);
 };
 
 // Work --------------------------------------------------------------------------------------------
