@@ -18,7 +18,7 @@ const isSimilarColor = (color, themeColor, colorOpacity = 100, themeOpacity = 10
   const { h: colorH, s: colorS, l: colorL } = rgbToHsl(color);
   const { h: themeH, s: themeS, l: themeL } = rgbToHsl(themeColor);
   const colorO = colorOpacity;
-  const themeO = colorOpacity;
+  const themeO = themeOpacity;
 
   const isSimilarHue = (colorHue, themeHue) => {
     const hueDifference = 5;
@@ -66,7 +66,7 @@ const isSimilarColor = (color, themeColor, colorOpacity = 100, themeOpacity = 10
     return colorOpacity === themeOpacity;
   }
 
-  return isSameOpacity(colorO, themeO) && isSimilarHue(colorH, themeH) && isSimilarSaturation(colorS, themeS) && isSimilarLight(colorS, themeS);
+  return isSameOpacity(colorO, themeO) && isSimilarHue(colorH, themeH) && isSimilarSaturation(colorS, themeS) && isSimilarLight(colorL, themeL);
 };
 
 const isSimilarImages = (image, themeImage): Boolean => image === themeImage;

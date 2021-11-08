@@ -13,7 +13,7 @@ const isSimilarColor = (color, themeColor, colorOpacity = 100, themeOpacity = 10
     const { h: colorH, s: colorS, l: colorL } = rgbToHsl(color);
     const { h: themeH, s: themeS, l: themeL } = rgbToHsl(themeColor);
     const colorO = colorOpacity;
-    const themeO = colorOpacity;
+    const themeO = themeOpacity;
     const isSimilarHue = (colorHue, themeHue) => {
         const hueDifference = 5;
         if (colorHue === themeHue)
@@ -59,7 +59,7 @@ const isSimilarColor = (color, themeColor, colorOpacity = 100, themeOpacity = 10
     const isSameOpacity = (colorOpacity, themeOpacity) => {
         return colorOpacity === themeOpacity;
     };
-    return isSameOpacity(colorO, themeO) && isSimilarHue(colorH, themeH) && isSimilarSaturation(colorS, themeS) && isSimilarLight(colorS, themeS);
+    return isSameOpacity(colorO, themeO) && isSimilarHue(colorH, themeH) && isSimilarSaturation(colorS, themeS) && isSimilarLight(colorL, themeL);
 };
 const isSimilarImages = (image, themeImage) => image === themeImage;
 const fixColor = (node, themeStyles) => {
@@ -113,7 +113,7 @@ const fixImages = (objectsArray, stylesArray) => {
 const main = () => {
     const themeStyles = figma.getLocalPaintStyles();
     if (themeStyles.length === 0) {
-        figma.notify("В этом файле нет стилей, а они как раз и нужны");
+        figma.notify("Layout with color styles is required");
         return;
     }
     ;
