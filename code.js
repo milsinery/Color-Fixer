@@ -117,11 +117,12 @@ const main = () => {
         return;
     }
     ;
-    const themeColors = themeStyles.filter(item => item.paints[0].type === "SOLID");
-    const themeImages = themeStyles.filter(item => item.paints[0].type === "IMAGE");
+    const themeColors = themeStyles.filter(item => item.paints.length === 1 && item.paints[0].type === "SOLID");
+    const themeImages = themeStyles.filter(item => item.paints.length === 1 && item.paints[0].type === "IMAGE");
     const allOjectsOnPage = figma.currentPage.findAll((item) => item.type !== 'BOOLEAN_OPERATION' && item.type !== 'SLICE' && item.type !== "GROUP" && item.type !== "COMPONENT_SET" && item.type !== "STICKY" && item.type !== "STAMP" && item.type !== "WIDGET" && item.type !== "SHAPE_WITH_TEXT" && item.type !== "CONNECTOR");
-    fixColors(allOjectsOnPage, themeColors);
-    fixImages(allOjectsOnPage, themeImages);
+    const all = allOjectsOnPage.filter(item => item.fills.length <= 1 && item.strokes.length <= 1);
+    fixColors(all, themeColors);
+    fixImages(all, themeImages);
 };
 // Work --------------------------------------------------------------------------------------------
 main();
