@@ -52,6 +52,8 @@ const isSameStyles = (colors, styles) => {
   for(let index = 0; index < colors.length; index++) {
     if(colors[index].color === undefined || styles[index].color === undefined) return;
 
+    if(colors[index].visible === false) return;
+
     if(colors[index].type === "SOLID" && isSimilarColor(colors[index].color, styles[index].color, colors[index].opacity, styles[index].opacity)){ 
       flag--;
     };
