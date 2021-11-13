@@ -1,6 +1,3 @@
-// Color Fixer, Beta
-
-// Functions ---------------------------------------------------------------------------------------
 const rgbToHsl = ({ r, g, b }) => {
   let v = Math.max(r, g, b),
     c = v - Math.min(r, g, b),
@@ -50,27 +47,25 @@ const isSameStyles = (colors, styles) => {
   let flag = colors.length;
 
   for(let index = 0; index < colors.length; index++) {
-    if(colors[index].color === undefined || styles[index].color === undefined) return;
-
     if(colors[index].visible === false) return;
 
-    if(colors[index].type === "SOLID" && isSimilarColor(colors[index].color, styles[index].color, colors[index].opacity, styles[index].opacity)){ 
-      flag--;
-    };
-  
-    if(colors[index].type === "IMAGE" && isSimilarImages(colors[index].imageHash, styles[index].imageHash)) {
-      flag--;
-    };
-  
-    if(colors[index].type === "GRADIENT_LINEAR" && isSimilarGradient(colors[index], styles[index])) {
-      console.log("Gradient")
-    };
+    if(colors[index].color !== undefined && styles[index].color !== undefined) {
+      if(colors[index].type === "SOLID" && isSimilarColor(colors[index].color, styles[index].color, colors[index].opacity, styles[index].opacity)){ 
+        flag--;
+      };
+
+      if(colors[index].type === "GRADIENT_LINEAR" && isSimilarGradient(colors[index], styles[index])) {
+        // flag--;
+      };
+    } else if(colors[index].type === "IMAGE" && isSimilarImages(colors[index].imageHash, styles[index].imageHash)) {
+        flag--;
+      };
   }
 
   return flag === 0;
 }
 
-const fixColor = async (node, themeStyles) => {
+const fixColor = (node, themeStyles) => {
   if(node.fillStyleId === themeStyles.id || node.strokeStyleId === themeStyles.id) return;
   if(isSameStyles(node.fills, themeStyles.paints)) node.fillStyleId = themeStyles.id;
   if(isSameStyles(node.strokes, themeStyles.paints)) node.strokeStyleId = themeStyles.id;
