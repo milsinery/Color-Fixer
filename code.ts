@@ -14,98 +14,65 @@ const rgbToHsl = ({ r, g, b }) => {
   };
 };
 
-const isSimilarColor = (color, themeColor, colorOpacity = 100, themeOpacity = 100): Boolean => {
-  const { h: colorH, s: colorS, l: colorL } = rgbToHsl(color);
-  const { h: themeH, s: themeS, l: themeL } = rgbToHsl(themeColor);
-  const colorO = colorOpacity;
-  const themeO = themeOpacity;
+const isSimilarColor = (color: {r: number, g: number, b: number}, themeColor: {r: number, g: number, b: number}, colorOpacity: number, themeOpacity: number): Boolean => {
+  const { h: colorHue, s: colorSaturation, l: colorLight } = rgbToHsl(color);
+  const { h: themeHue, s: themeSaturation, l: themeLight } = rgbToHsl(themeColor);
+
+  const isSameOpacity = (colorOpacity: number, themeOpacity: number) => colorOpacity === themeOpacity;
 
   const isSimilarHue = (colorHue, themeHue) => {
-    const hueDifference = 5;
-
     if(colorHue === themeHue) return true;
-
-    if(colorHue > themeHue && colorHue - themeHue <= hueDifference) {
-      return true;
-    } else if(colorHue < themeHue && themeHue - colorHue <= hueDifference) {
-      return true;
-    } else {
-      return false;
-    }
+    return (colorHue > themeHue && colorHue - themeHue <= 5) || (colorHue < themeHue && themeHue - colorHue <= 5);
   }
 
   const isSimilarSaturation = (colorSaturation, themeSaturation) => {
-    const saturationDifference = 5;
-
     if(colorSaturation === themeSaturation) return true;
-
-    if(colorSaturation > themeSaturation && colorSaturation - themeSaturation <= saturationDifference) {
-      return true;
-    } else if(colorSaturation < themeSaturation && themeSaturation - colorSaturation <= saturationDifference) {
-      return true;
-    } else {
-      return false;
-    }
+    return ((colorSaturation > themeSaturation && colorSaturation - themeSaturation <= 5) || (colorSaturation < themeSaturation && themeSaturation - colorSaturation <= 5));
   }
 
   const isSimilarLight = (colorLight, themeLight) => {
-    const colorDifference = 5;
-
     if(colorLight === themeLight) return true;
-
-    if(colorLight > themeLight && colorLight - themeLight <= colorDifference) {
-      return true;
-    } else if(colorLight < themeLight && themeLight - colorLight <= colorDifference) {
-      return true;
-    } else {
-      return false;
-    }
+    return ((colorLight > themeLight && colorLight - themeLight <= 5) || (colorLight < themeLight && themeLight - colorLight <= 5));
   }
 
-  const isSameOpacity = (colorOpacity, themeOpacity) => {
-    return colorOpacity === themeOpacity;
-  }
-
-  return isSameOpacity(colorO, themeO) && isSimilarHue(colorH, themeH) && isSimilarSaturation(colorS, themeS) && isSimilarLight(colorL, themeL);
+  return isSameOpacity(colorOpacity, themeOpacity) && isSimilarHue(colorHue, themeHue) && isSimilarSaturation(colorSaturation, themeSaturation) && isSimilarLight(colorLight, themeLight);
 };
 
 const isSimilarImages = (image, themeImage): Boolean => image === themeImage;
 
-const fixColor = (node, themeStyles) => {
-  if(node.fillStyleId === themeStyles.id || node.strokeStyleId === themeStyles.id) return;
-
-  if (node.fills.length !== 1 && node.strokes.length !== 1) return;
-
-  if (node.fills.length === 1 && node.fills[0].type === "SOLID") {
-    if (isSimilarColor(node.fills[0].color, themeStyles.paints[0].color, node.fills[0].opacity, themeStyles.paints[0].opacity)){
-      node.fillStyleId = themeStyles.id;
-    }
-  }
-
-  if (node.strokes.length === 1 && node.strokes[0].type === "SOLID") {
-    if (isSimilarColor(node.strokes[0].color, themeStyles.paints[0].color, node.strokes[0].opacity, themeStyles.paints[0].opacity)){
-      node.strokeStyleId = themeStyles.id;
-    }
-  }
+const isSimilarGradient = (gradient, themeGradient): Boolean => {
+  return false;
 };
 
-const fixImage = (node, themeStyles) => {
-  if(node.fillStyleId === themeStyles.id || node.strokeStyleId === themeStyles.id) return;
+const isSameStyles = (colors, styles) => {
+  if(colors.length !== styles.length) return;
 
-  if (node.fills.length !== 1 && node.strokes.length !== 1) return;
+  let flag = colors.length;
 
-  if(node.fills.length === 1 && node.fills[0].type === "IMAGE") {
-    if(node.fills[0].imageHash === themeStyles.paints[0].imageHash) {
-      node.fillStyleId = themeStyles.id;
-    }
-  };
+  for(let index = 0; index < colors.length; index++) {
+    if(colors[index].color === undefined || styles[index].color === undefined) return;
 
-  if(node.strokes.length === 1 && node.strokes[0].type === "IMAGE") {
-    if(node.strokes[0].imageHash === themeStyles.paints[0].imageHash) {
-      node.strokeStyleId = themeStyles.id;
-    }
-  };
+    if(colors[index].type === "SOLID" && isSimilarColor(colors[index].color, styles[index].color, colors[index].opacity, styles[index].opacity)){ 
+      flag--;
+    };
+  
+    if(colors[index].type === "IMAGE" && isSimilarImages(colors[index].imageHash, styles[index].imageHash)) {
+      flag--;
+    };
+  
+    if(colors[index].type === "GRADIENT_LINEAR" && isSimilarGradient(colors[index], styles[index])) {
+      console.log("Gradient")
+    };
+  }
+
+  return flag === 0;
 }
+
+const fixColor = async (node, themeStyles) => {
+  if(node.fillStyleId === themeStyles.id || node.strokeStyleId === themeStyles.id) return;
+  if(isSameStyles(node.fills, themeStyles.paints)) node.fillStyleId = themeStyles.id;
+  if(isSameStyles(node.strokes, themeStyles.paints)) node.strokeStyleId = themeStyles.id;
+};
 
 const fixColors = (objectsArray, stylesArray) => {
   for (const element1 of objectsArray) {
@@ -115,29 +82,22 @@ const fixColors = (objectsArray, stylesArray) => {
   }
 };
 
-const fixImages = (objectsArray, stylesArray) => {
-  for (const element1 of objectsArray) {
-    for (const element2 of stylesArray) {
-      fixImage(element1, element2);
-    }
-  }
-};
-
 const main = () => {
   const themeStyles = figma.getLocalPaintStyles();
   
   if (themeStyles.length === 0) {
     figma.notify("Layout with color styles is required");
-    return
+    return;
   };
   
-  const themeColors = themeStyles.filter(item => item.paints.length === 1 && item.paints[0].type === "SOLID") as Array<PaintStyle>;
-  const themeImages = themeStyles.filter(item => item.paints.length === 1 && item.paints[0].type === "IMAGE") as Array<PaintStyle>;
-  const allOjectsOnPage = figma.currentPage.findAll((item) => item.type !== 'BOOLEAN_OPERATION' && item.type !== 'SLICE' && item.type !== "GROUP" && item.type !== "COMPONENT_SET" && item.type !== "STICKY" && item.type !== "STAMP" && item.type !== "WIDGET" && item.type !== "SHAPE_WITH_TEXT" && item.type !== "CONNECTOR");
-  const all = allOjectsOnPage.filter(item => item.fills.length <= 1 && item.strokes.length <= 1);
+  const allObjectsOnPage = figma.currentPage.findAll((item) => item.type !== 'BOOLEAN_OPERATION' && item.type !== 'SLICE' && item.type !== "GROUP" && item.type !== "COMPONENT_SET" && item.type !== "STICKY" && item.type !== "STAMP" && item.type !== "WIDGET" && item.type !== "SHAPE_WITH_TEXT" && item.type !== "CONNECTOR");
 
-  fixColors(all, themeColors);
-  fixImages(all, themeImages);
+  if(allObjectsOnPage.length === 0) {
+    figma.notify("There are no items to check on this page");
+    return;
+  }
+
+  fixColors(allObjectsOnPage, themeStyles);
 };
 
 // Work --------------------------------------------------------------------------------------------
