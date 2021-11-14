@@ -71,6 +71,17 @@ const fixColors = (objectsArray, stylesArray) => {
         }
     }
 };
+const isInstanceOrParentInstance = (obj) => {
+    if (obj.type === "INSTANCE" || obj.parent.type === "INSTANCE")
+        return true;
+    if (obj.type !== "INSTANCE" && obj.parent.type !== "INSTANCE" && obj.parent.type === "PAGE") {
+        return false;
+    }
+    else {
+        if (obj.type !== "INSTANCE" && obj.parent.type !== "INSTANCE" && obj.parent.type !== "PAGE")
+            return isInstanceOrParentInstance(obj.parent);
+    }
+};
 const main = () => {
     const themeStyles = figma.getLocalPaintStyles();
     if (themeStyles.length === 0) {
@@ -78,13 +89,13 @@ const main = () => {
         return;
     }
     ;
-    const allObjectsOnPage = figma.currentPage.findAll((item) => item.type !== 'BOOLEAN_OPERATION' && item.type !== 'SLICE' && item.type !== "GROUP" && item.type !== "COMPONENT_SET" && item.type !== "STICKY" && item.type !== "STAMP" && item.type !== "WIDGET" && item.type !== "SHAPE_WITH_TEXT" && item.type !== "CONNECTOR");
-    if (allObjectsOnPage.length === 0) {
+    const allObjectsOnPage = figma.currentPage.findAll((item) => item.type === "LINE" || item.type === "ELLIPSE" || item.type === "POLYGON" || item.type === "VECTOR" || item.type === "STAR" || item.type === "RECTANGLE" || item.type === "FRAME" || item.type === "TEXT" || item.type === "COMPONENT");
+    const allFiltered = allObjectsOnPage.filter(item => item.visible && !isInstanceOrParentInstance(item));
+    if (allFiltered.length === 0) {
         figma.notify("There are no items to check on this page");
         return;
     }
-    fixColors(allObjectsOnPage, themeStyles);
+    fixColors(allFiltered, themeStyles);
 };
-// Work --------------------------------------------------------------------------------------------
 main();
 figma.closePlugin();
